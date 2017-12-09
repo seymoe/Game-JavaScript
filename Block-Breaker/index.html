@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="zh_cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>打砖块</title>
+  <style lang="text/css">
+    #BlockBreaker{
+      border: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="BlockBreaker" width="500" height="400"></canvas>
+  <script>
+    var log = console.log.bind(console)
+
+    var loadImageByPath = function (path) {
+      var img = new Image()
+      img.src = path
+      return img
+    }
+
+    var Paddle = function () {
+      var image =loadImageByPath('paddle.png')
+      var o = {
+        image: image,
+        x: 200,
+        y: 300,
+        imageW: image.width,
+        imageH: image.height,
+        speed: 5,
+      }
+
+      // 向左移动
+      o.moveLeft = function () {
+        o.x -= o.speed
+      }
+      // 向右移动
+      o.moveRight = function () {
+        o.x += o.speed
+      }
+
+      return o
+    }
+
+    var XiGame = function () {
+      var g = {
+        actions: {},
+        keydowns: {},
+        fps: 30
+      }
+
+      var canvas = document.querySelector("#BlockBreaker")
+      var context = canvas.getContext('2d')
+
+      g.canvas = canvas
+      g.context =context
+
+      // clear
+      g.clear = function () {
+        context.clearRect(0, 0, canvas.width, canvas.height)
+      }
+
+      // draw
+      g.draw = function () {}
+
+      // events
+      window.addEventListener('keydown', function (event) {
+        g.keydowns[event.key] = true
+      })
+      window.addEventListener('keyup', function (event) {
+        g.keydowns[event.key] = false
+      })
+
+      g.registerAction = function (key, callback) {
+        g.actions[key] = callback
+      }
+
+      // timer
+      setInterval(function () {
+        var actions = Object.keys(g.actions)
+        actions.forEach(function (item) {
+          if (g.keydowns[item]) {
+            g.actions[item]()
+          }
+        })
+        // clear
+        g.clear()
+        // draw
+        g.draw()
+      }, 1000 /g .fps)
+
+      return g
+    }
+
+    var __main = function () {
+      var game = XiGame()
+
+      var paddle = Paddle()
+      // paddle
+      log(paddle)
+
+      // 注册按键事件
+      game.registerAction('a', function () {
+        paddle.moveLeft()
+      })
+      game.registerAction('d', function () {
+        paddle.moveRight()
+      })
+
+      game.draw = function () {
+        game.context.drawImage(paddle.image, paddle.x, paddle.y, paddle.imageW / 2, paddle.imageH / 2)
+      }
+    }
+    __main()
+  </script>
+</body>
+</html>
