@@ -28,18 +28,43 @@
         image: image,
         x: 200,
         y: 300,
-        imageW: image.width,
-        imageH: image.height,
+        imageW: image.width / 2,
+        imageH: image.height / 2,
         speed: 5,
       }
 
       // 向左移动
       o.moveLeft = function () {
         o.x -= o.speed
+        if (o.x < 0) {
+          o.x = 0
+        }
       }
       // 向右移动
-      o.moveRight = function () {
+      o.moveRight = function (cvs) {
         o.x += o.speed
+        if (o.x + o.imageW > cvs.width) {
+          o.x = cvs.width - o.imageW
+        }
+      }
+
+      return o
+    }
+
+    var Ball = function () {
+      var image =loadImageByPath('ball.png')
+      var o = {
+        image: image,
+        x: 200,
+        y: 300,
+        imageW: image.width / 4,
+        imageH: image.height / 4,
+        speed: 5,
+      }
+
+      // 移动
+      o.move = function () {
+        log('move')
       }
 
       return o
@@ -58,9 +83,15 @@
       g.canvas = canvas
       g.context =context
 
+      // update
+      g.update = function () {}
+
       // clear
       g.clear = function () {
         context.clearRect(0, 0, canvas.width, canvas.height)
+      }
+      g.drawImage = function (img) {
+        context.drawImage(img.image, img.x, img.y, img.imageW, img.imageH)
       }
 
       // draw
@@ -86,6 +117,9 @@
             g.actions[item]()
           }
         })
+
+        // update
+        g.update()
         // clear
         g.clear()
         // draw
@@ -99,19 +133,23 @@
       var game = XiGame()
 
       var paddle = Paddle()
-      // paddle
-      log(paddle)
+      var ball = Ball()
 
       // 注册按键事件
       game.registerAction('a', function () {
         paddle.moveLeft()
       })
       game.registerAction('d', function () {
-        paddle.moveRight()
+        paddle.moveRight(game.canvas)
       })
 
+      game.update = function () {
+        ball.move()
+      }
+
       game.draw = function () {
-        game.context.drawImage(paddle.image, paddle.x, paddle.y, paddle.imageW / 2, paddle.imageH / 2)
+        game.drawImage(paddle)
+        game.drawImage(ball)
       }
     }
     __main()
