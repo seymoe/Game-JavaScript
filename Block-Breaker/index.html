@@ -10,156 +10,44 @@
       border: 1px solid #333;
     }
   </style>
+  <script src="js/game.js"></script>
+  <script src="js/ball.js"></script>
+  <script src="js/paddle.js"></script>
+  <script src="js/block.js"></script>
 </head>
 <body>
-  <canvas id="BlockBreaker" width="500" height="400"></canvas>
+  <canvas id="BlockBreaker" width="600" height="400"></canvas>
   <script>
     var log = console.log.bind(console)
 
+    // 根据路劲加载图片
     var loadImageByPath = function (path) {
       var img = new Image()
       img.src = path
       return img
     }
-
-    var Paddle = function () {
-      var image =loadImageByPath('paddle.png')
-      var o = {
-        image: image,
-        x: 200,
-        y: 300,
-        imageW: image.width / 2,
-        imageH: image.height / 2,
-        speed: 15,
-      }
-
-      // 向左移动
-      o.moveLeft = function () {
-        o.x -= o.speed
-        if (o.x < 0) {
-          o.x = 0
-        }
-      }
-      // 向右移动
-      o.moveRight = function (cvs) {
-        o.x += o.speed
-        if (o.x + o.imageW > cvs.width) {
-          o.x = cvs.width - o.imageW
-        }
-      }
-
-      return o
-    }
-
-    var Ball = function () {
-      var image =loadImageByPath('ball.png')
-      var o = {
-        image: image,
-        x: 200,
-        y: 300,
-        imageW: image.width / 4,
-        imageH: image.height / 4,
-        speedX: 10,
-        speedY: 10,
-        fired: false,
-      }
-      // 发射
-      o.fire = function () {
-        o.fired = true
-      }
-      // 移动
-      o.move = function (cvs) {
-        if (o.fired) {
-          if (o.x < 0 || o.x + o.imageW > cvs.width) {
-            o.speedX *= -1
-          }
-          if (o.y < 0 || o.y + o.imageH > cvs.height) {
-            o.speedY *= -1
-          }
-
-          // move
-          o.x += o.speedX
-          o.y += o.speedY
-        }
-      }
-      // 相撞
-      o.collide = function (sth) {
-        if (o.y + o.imageH > sth.y) {
-          if (o.x > sth.x && o.x < sth.imageW + sth.x) {
-            log('collide')
-            return true
-          }
-        }
+    // 碰撞检测
+    var rectIntersect = function (a, b) {
+      if (a.x > b.x + b.imageW || b.x > a.x + a.imageW || a.y > b.y + b.imageH || b.y > a.y + a.imageH) {
         return false
+      } else {
+        return true
       }
-
-      return o
-    }
-
-    var XiGame = function () {
-      var g = {
-        actions: {},
-        keydowns: {},
-        fps: 30
-      }
-
-      var canvas = document.querySelector("#BlockBreaker")
-      var context = canvas.getContext('2d')
-
-      g.canvas = canvas
-      g.context =context
-
-      // update
-      g.update = function () {}
-
-      // clear
-      g.clear = function () {
-        context.clearRect(0, 0, canvas.width, canvas.height)
-      }
-      g.drawImage = function (img) {
-        context.drawImage(img.image, img.x, img.y, img.imageW, img.imageH)
-      }
-
-      // draw
-      g.draw = function () {}
-
-      // events
-      window.addEventListener('keydown', function (event) {
-        g.keydowns[event.key] = true
-      })
-      window.addEventListener('keyup', function (event) {
-        g.keydowns[event.key] = false
-      })
-
-      g.registerAction = function (key, callback) {
-        g.actions[key] = callback
-      }
-
-      // timer
-      setInterval(function () {
-        var actions = Object.keys(g.actions)
-        actions.forEach(function (item) {
-          if (g.keydowns[item]) {
-            g.actions[item]()
-          }
-        })
-
-        // update
-        g.update()
-        // clear
-        g.clear()
-        // draw
-        g.draw()
-      }, 1000 /g .fps)
-
-      return g
     }
 
     var __main = function () {
       var game = XiGame()
-
       var paddle = Paddle()
       var ball = Ball()
+
+
+      // 一组砖块
+      var blocks = new Array(10)
+      for (var i = 0; i < blocks.length; i++) {
+          blocks[i] = Block()
+          blocks[i].x = blocks[i].imageW * i
+          blocks[i].y = 0
+      }
 
       // 注册按键事件
       game.registerAction('a', function () {
@@ -175,16 +63,30 @@
       game.update = function () {
         ball.move(game.canvas)
 
-        // 相撞改变方向
-        if (ball.collide(paddle)) {
-          ball.speedX *= -1
-          ball.speedY *= -1
+        // 球与板子相撞反弹
+        if (paddle.collide(ball)) {
+          ball.rebound()
+        }
+        // 球与砖块相撞反弹
+        for (var i = 0; i < blocks.length; i++) {
+          var block = blocks[i]
+          if (block.alive && block.collide(ball)) {
+            block.kill()
+            ball.rebound()
+          }
         }
       }
 
       game.draw = function () {
         game.drawImage(paddle)
         game.drawImage(ball)
+        
+        for (var i = 0; i < blocks.length; i++) {
+          var block = blocks[i]
+          if (block.alive) {
+            game.drawImage(block)
+          }
+        }
       }
     }
     __main()
