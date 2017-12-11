@@ -30,7 +30,7 @@
         y: 300,
         imageW: image.width / 2,
         imageH: image.height / 2,
-        speed: 5,
+        speed: 15,
       }
 
       // 向左移动
@@ -59,12 +59,38 @@
         y: 300,
         imageW: image.width / 4,
         imageH: image.height / 4,
-        speed: 5,
+        speedX: 10,
+        speedY: 10,
+        fired: false,
       }
-
+      // 发射
+      o.fire = function () {
+        o.fired = true
+      }
       // 移动
-      o.move = function () {
-        log('move')
+      o.move = function (cvs) {
+        if (o.fired) {
+          if (o.x < 0 || o.x + o.imageW > cvs.width) {
+            o.speedX *= -1
+          }
+          if (o.y < 0 || o.y + o.imageH > cvs.height) {
+            o.speedY *= -1
+          }
+
+          // move
+          o.x += o.speedX
+          o.y += o.speedY
+        }
+      }
+      // 相撞
+      o.collide = function (sth) {
+        if (o.y + o.imageH > sth.y) {
+          if (o.x > sth.x && o.x < sth.imageW + sth.x) {
+            log('collide')
+            return true
+          }
+        }
+        return false
       }
 
       return o
@@ -142,9 +168,18 @@
       game.registerAction('d', function () {
         paddle.moveRight(game.canvas)
       })
+      game.registerAction('f', function () {
+        ball.fire()
+      })
 
       game.update = function () {
-        ball.move()
+        ball.move(game.canvas)
+
+        // 相撞改变方向
+        if (ball.collide(paddle)) {
+          ball.speedX *= -1
+          ball.speedY *= -1
+        }
       }
 
       game.draw = function () {
