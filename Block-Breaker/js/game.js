@@ -1,4 +1,4 @@
-var XiGame = function () {
+var Game = function () {
   var g = {
     actions: {},
     keydowns: {},
@@ -37,8 +37,8 @@ var XiGame = function () {
     g.actions[key] = callback
   }
 
-  // timer
-  setInterval(function () {
+  // timer function
+  var runloop = function () {
     var actions = Object.keys(g.actions)
     actions.forEach(function (item) {
       if (g.keydowns[item]) {
@@ -52,6 +52,14 @@ var XiGame = function () {
     g.clear()
     // draw
     g.draw()
+
+    setTimeout(function () {
+      runloop()
+    }, 1000 / g.fps)
+  }
+  
+  setTimeout(function () {
+    runloop()
   }, 1000 / g.fps)
 
   return g
