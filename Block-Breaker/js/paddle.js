@@ -4,7 +4,7 @@ var Paddle = function () {
   var o = {
     image: image,
     x: 200,
-    y: 350,
+    y: 360,
     imageW: image.width,
     imageH: image.height,
     speed: 15,
