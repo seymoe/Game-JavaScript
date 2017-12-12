@@ -7,8 +7,8 @@ var loadImageByPath = function (path) {
   return img
 }
 // 碰撞检测
-var rectIntersect = function (a, b) {
-  if (a.x > b.x + b.imageW || b.x > a.x + a.imageW || a.y > b.y + b.imageH || b.y > a.y + a.imageH) {
+var rectIntersects = function (a, b) {
+  if (a.x > b.x + b.w || b.x > a.x + a.w || a.y > b.y + b.h || b.y > a.y + a.h) {
     return false
   } else {
     return true
